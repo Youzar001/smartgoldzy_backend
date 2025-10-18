@@ -267,6 +267,78 @@ document.getElementById('langBtn').addEventListener('click', ()=>{
 });
 document.getElementById('safeBtn').addEventListener('click', ()=>{ alert('Safe Mode toggled (demo)'); });
 
-</script>
+
+  // server.js (Node.js minimal)
+// -> npm init -y
+// -> npm i express ws axios technicalindicators
+
+const express = require('express');
+const WebSocket = require('ws');
+const axios = require('axios');
+const ti = require('technicalindicators');
+
+const app = express();
+const PORT = process.env.PORT || 4000;
+
+// In-memory candles for a single symbol (demo)
+let closes = []; // use rolling window
+const WINDOW = 200;
+
+function computeIndicators() {
+  const sma50 = ti.SMA.calculate({ period: 50, values: closes });
+  const sma200 = ti.SMA.calculate({ period: 200, values: closes });
+  const rsi = ti.RSI.calculate({ period: 14, values: closes });
+  return {
+    sma50: sma50.length ? sma50[sma50.length-1] : null,
+    sma200: sma200.length ? sma200[sma200.length-1] : null,
+    rsi: rsi.length ? rsi[rsi.length-1] : null
+  };
+}
+
+// Simple WebSocket server to push signals to clients
+const server = require('http').createServer(app);
+const wss = new WebSocket.Server({ server });
+
+wss.on('connection', ws => {
+  ws.send(JSON.stringify({ type:'hello', msg:'connected to signals server' }));
+});
+
+// Example: subscribe to Binance trades for BTCUSDT
+const symbol = 'btcusdt';
+const binanceWS = new WebSocket(`wss://stream.binance.com:9443/ws/${symbol}@trade`);
+
+binanceWS.on('message', msg => {
+  const data = JSON.parse(msg);
+  // data.p = price, data.q = quantity
+  const price = parseFloat(data.p);
+  // push close price (for demo we treat each trade as a "close")
+  closes.push(price);
+  if (closes.length > WINDOW) closes.shift();
+
+  if (closes.length >= 50) {
+    const ind = computeIndicators();
+    // simple rule: sma50 > sma200 => bullish
+    let score = 0;
+    if (ind.sma50 && ind.sma200 && ind.sma50 > ind.sma200) score += 40;
+    if (ind.rsi && ind.rsi < 30) score += 20; // oversold => buy signal
+    // naive volume/whale detection omitted for brevity
+    const signal = {
+      symbol: 'BTC/USDT',
+      score,
+      rsi: ind.rsi,
+      sma50: ind.sma50,
+      sma200: ind.sma200,
+      timestamp: Date.now()
+    };
+    // broadcast
+    wss.clients.forEach(c => {
+      if (c.readyState === WebSocket.OPEN) c.send(JSON.stringify({ type:'signal', signal }));
+    });
+  }
+});
+
+server.listen(PORT, () => console.log('Server listening on', PORT));
+  </script>
 </body>
+  
 </html>
