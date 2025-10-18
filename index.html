@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>ZY Smart Signal — Live Demo</title>
+  <title>ZY Smart Signal — Live Gold Price</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -39,15 +39,16 @@
   </div>
 
   <script>
-  // 🔑 مفتاح API من موقع finnhub.io
-  const FINNHUB_API_KEY = "c6vta6qad3ic5vshq7t0"; // مفتاح تجريبي صالح
-
   async function updateGoldPrice() {
     try {
-      const res = await fetch(`https://finnhub.io/api/v1/quote?symbol=OANDA:XAU_USD&token=${FINNHUB_API_KEY}`);
+      // مصدر مفتوح لا يحتاج API key
+      const res = await fetch("https://api.metals.live/v1/spot");
       const data = await res.json();
 
-      const price = data.c;
+      // الذهب عادة في أول عنصر (XAU/USD)
+      const goldData = data.find(item => item.hasOwnProperty("gold"));
+      const price = goldData ? goldData.gold : null;
+
       const goldElem = document.getElementById('gold');
       const whaleText = document.getElementById('whaleText');
 
@@ -73,7 +74,6 @@
     }
   }
 
-  // التحديث كل 15 ثانية
   setInterval(updateGoldPrice, 15000);
   updateGoldPrice();
   </script>
