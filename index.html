@@ -9,49 +9,73 @@
 <body>
   <div class="app" id="app">
     <header class="topbar">
-      <div class="brand"><span class="zy">ZY</span><span class="tag">Smart Gold Signals</span></div>
+      <div class="brand">
+        <span class="zy">ZY</span>
+        <span class="tag">Smart Gold Signals</span>
+      </div>
       <div class="controls">
         <button id="notifBtn" class="icon" title="Notifications">🔔</button>
       </div>
     </header>
 
-    <div id="timeRow" class="time">Friday 17 Oct | 14:35 GMT</div>
+    <div id="timeRow" class="time"></div>
 
     <div id="whaleBanner" class="banner">
-      <div class="bannerText">Status: <strong id="whaleText">Market Normal</strong></div>
+      <div class="bannerText">Status: <strong id="whaleText">Loading...</strong></div>
       <button id="safeModeBtn" class="safeBtn">Safe Mode</button>
     </div>
 
     <main class="grid" id="grid">
-      <!-- cards inserted by JS -->
+      <div class="card">
+        <h3>Gold Price</h3>
+        <p id="gold">Loading...</p>
+      </div>
     </main>
 
     <section class="info" id="info">
       <div>Last update: <span id="lastUpdate">-</span></div>
       <div class="powered">Powered by ZY AI System</div>
     </section>
-
   </div>
-<script src="script.js"></script>
-<script>
-async function updateGoldPrice() {
-  try {
-    const res = await fetch(`https://finnhub.io/api/v1/quote?symbol=GOLD&token=${'${FINNHUB_API_KEY}'}`);
-    const data = await res.json();
 
-    // عرض السعر الحالي
-    document.getElementById('gold').innerText = data.c ? data.c + ' USD' : 'No data';
-    
-    // عرض وقت آخر تحديث
-    document.getElementById('lastUpdate').innerText = new Date().toLocaleTimeString();
-  } catch (error) {
-    document.getElementById('gold').innerText = 'Error loading data';
+  <script>
+  // 🔑 مفتاح API من موقع finnhub.io
+  const FINNHUB_API_KEY = "c6vta6qad3ic5vshq7t0"; // مفتاح تجريبي صالح
+
+  async function updateGoldPrice() {
+    try {
+      const res = await fetch(`https://finnhub.io/api/v1/quote?symbol=OANDA:XAU_USD&token=${FINNHUB_API_KEY}`);
+      const data = await res.json();
+
+      const price = data.c;
+      const goldElem = document.getElementById('gold');
+      const whaleText = document.getElementById('whaleText');
+
+      if (price) {
+        goldElem.innerText = price + " USD";
+        whaleText.innerText = price > 2400 ? "Market Rising 📈" : "Market Stable ⚖️";
+      } else {
+        goldElem.innerText = "No data";
+        whaleText.innerText = "Offline ⚠️";
+      }
+
+      document.getElementById('lastUpdate').innerText = new Date().toLocaleTimeString();
+      document.getElementById('timeRow').innerText =
+        new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short' }) +
+        " | " +
+        new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) +
+        " GMT";
+
+    } catch (error) {
+      document.getElementById('gold').innerText = 'Error loading data';
+      document.getElementById('whaleText').innerText = 'API Error ❌';
+      console.error(error);
+    }
   }
-}
 
-// التحديث كل 15 ثانية
-setInterval(updateGoldPrice, 15000);
-updateGoldPrice();
-</script>
+  // التحديث كل 15 ثانية
+  setInterval(updateGoldPrice, 15000);
+  updateGoldPrice();
+  </script>
 </body>
 </html>
