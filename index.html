@@ -3,89 +3,94 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>ZY Smart Gold Signals</title>
+  <title>ZY Smart Signal — Demo</title>
   <link rel="stylesheet" href="styles.css" />
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <style>
-    body { font-family: Arial, sans-serif; background: #0b0b0b; color: #f1f1f1; text-align: center; padding: 20px; }
-    .card { background: #161616; border-radius: 12px; padding: 15px; margin: 10px auto; max-width: 400px; }
-    .brand { font-size: 1.3em; font-weight: bold; color: gold; }
-    canvas { width: 100%; height: 250px; }
-  </style>
 </head>
 <body>
-  <div class="brand">ZY Smart Gold & Oil Signals</div>
-  <div id="timeRow"></div>
+  <div class="app" id="app">
+    <header class="topbar">
+      <div class="brand"><span class="zy">ZY</span><span class="tag">Smart Gold Signals</span></div>
+      <div class="controls">
+        <button id="notifBtn" class="icon" title="Notifications">🔔</button>
+        <button id="langBtn" class="icon" title="Language">EN</button>
+      </div>
+    </header>
 
-  <div class="card">
-    <h3>Gold Price (USD/oz)</h3>
-    <p id="gold">Loading...</p>
-    <canvas id="goldChart"></canvas>
+    <div id="timeRow" class="time">Friday 17 Oct | 14:35 GMT</div>
+
+    <div id="whaleBanner" class="banner active" role="status" aria-live="polite">
+      <div class="bannerText">🚨 Whale Detected — Market unstable. Trading paused ⚠️</div>
+      <button id="safeModeBtn" class="safeBtn">Safe Mode</button>
+    </div>
+
+    <main class="cards">
+      <div class="card" data-symbol="XAUUSD" tabindex="0">
+        <div class="card-left">
+          <div class="symbol">XAU/USD</div>
+          <div class="name" data-en="Gold" data-ar="الذهب">Gold</div>
+        </div>
+        <div class="card-right">
+          <div class="direction buy">BUY</div>
+          <div class="metrics"><span class="success">92</span><small>%</small> <span class="sep">·</span> <span class="risk">8</span><small>%</small></div>
+          <div class="indicators">RSI · MACD · EMA</div>
+        </div>
+      </div>
+
+      <div class="card" data-symbol="WTI" tabindex="0">
+        <div class="card-left">
+          <div class="symbol">WTI</div>
+          <div class="name" data-en="Oil" data-ar="النفط">Oil</div>
+        </div>
+        <div class="card-right">
+          <div class="direction sell">SELL</div>
+          <div class="metrics"><span class="success">85</span><small>%</small> <span class="sep">·</span> <span class="risk">15</span><small>%</small></div>
+          <div class="indicators">RSI · ATR · VOLUME</div>
+        </div>
+      </div>
+
+      <div class="card" data-symbol="BTCUSD" tabindex="0">
+        <div class="card-left">
+          <div class="symbol">BTC/USD</div>
+          <div class="name" data-en="Bitcoin" data-ar="البيتكوين">Bitcoin</div>
+        </div>
+        <div class="card-right">
+          <div class="direction wait">WAIT</div>
+          <div class="metrics"><span class="success">74</span><small>%</small> <span class="sep">·</span> <span class="risk">26</span><small>%</small></div>
+          <div class="indicators">RSI · MACD</div>
+        </div>
+      </div>
+
+      <div class="card" data-symbol="EURUSD" tabindex="0">
+        <div class="card-left">
+          <div class="symbol">EUR/USD</div>
+          <div class="name" data-en="EUR / USD" data-ar="اليورو/دولار">EUR / USD</div>
+        </div>
+        <div class="card-right">
+          <div class="direction buy">BUY</div>
+          <div class="metrics"><span class="success">88</span><small>%</small> <span class="sep">·</span> <span class="risk">12</span><small>%</small></div>
+          <div class="indicators">RSI · EMA · MACD</div>
+        </div>
+      </div>
+    </main>
+
+    <section class="indpanel" aria-label="Indicators panel">
+      <div class="indrow"><div>RSI</div><div class="indval">55</div></div>
+      <div class="indrow"><div>MACD</div><div class="indval">+0.12</div></div>
+      <div class="indrow"><div>ATR</div><div class="indval">0.45</div></div>
+      <div class="indrow"><div>Volume</div><div class="indval">Normal</div></div>
+      <div class="indrow"><div>Trend Power</div><div class="indval">78%</div></div>
+    </section>
+
+    <footer class="footer">
+      <div class="left">
+        <button id="stopBtn" class="stopBtn">🛑 Stop Trading (Emergency)</button>
+      </div>
+      <div class="right">
+        <div class="powered">Powered by ZY AI System</div>
+        <div class="timeSmall">Friday 17 Oct | 14:35 GMT</div>
+      </div>
+    </footer>
   </div>
-
-  <div class="card">
-    <h3>Oil Price (USD/barrel)</h3>
-    <p id="oil">Loading...</p>
-    <canvas id="oilChart"></canvas>
-  </div>
-
-  <div class="card">Last update: <span id="lastUpdate">-</span></div>
-
-<script>
-let goldHistory = [];
-let oilHistory = [];
-
-const goldChartCtx = document.getElementById('goldChart').getContext('2d');
-const oilChartCtx = document.getElementById('oilChart').getContext('2d');
-
-const goldChart = new Chart(goldChartCtx, {
-  type: 'line',
-  data: { labels: [], datasets: [{ label: 'Gold', data: [], borderColor: 'gold', tension: 0.3 }] },
-});
-
-const oilChart = new Chart(oilChartCtx, {
-  type: 'line',
-  data: { labels: [], datasets: [{ label: 'Oil', data: [], borderColor: 'orange', tension: 0.3 }] },
-});
-
-async function updatePrices() {
-  try {
-    const res = await fetch('https://api.metals.live/v1/spot');
-    const data = await res.json();
-    const gold = data.find(x => x.gold);
-    const oil = data.find(x => x.oil);
-
-    const now = new Date().toLocaleTimeString();
-
-    if (gold) {
-      document.getElementById('gold').innerText = gold.gold + ' USD';
-      goldHistory.push({ time: now, price: gold.gold });
-      if (goldHistory.length > 10) goldHistory.shift();
-      goldChart.data.labels = goldHistory.map(p => p.time);
-      goldChart.data.datasets[0].data = goldHistory.map(p => p.price);
-      goldChart.update();
-    }
-
-    if (oil) {
-      document.getElementById('oil').innerText = oil.oil + ' USD';
-      oilHistory.push({ time: now, price: oil.oil });
-      if (oilHistory.length > 10) oilHistory.shift();
-      oilChart.data.labels = oilHistory.map(p => p.time);
-      oilChart.data.datasets[0].data = oilHistory.map(p => p.price);
-      oilChart.update();
-    }
-
-    document.getElementById('lastUpdate').innerText = now;
-    document.getElementById('timeRow').innerText = new Date().toUTCString();
-
-  } catch (e) {
-    document.getElementById('gold').innerText = 'Error loading data';
-    document.getElementById('oil').innerText = 'Error loading data';
-  }
-}
-
-updatePrices();
-setInterval(updatePrices, 15000);
-</script>
+<script src="script.js"></script>
 </body>
 </html>
