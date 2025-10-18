@@ -3,79 +3,89 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>ZY Smart Signal — Live Gold Price</title>
+  <title>ZY Smart Gold Signals</title>
   <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; background: #0b0b0b; color: #f1f1f1; text-align: center; padding: 20px; }
+    .card { background: #161616; border-radius: 12px; padding: 15px; margin: 10px auto; max-width: 400px; }
+    .brand { font-size: 1.3em; font-weight: bold; color: gold; }
+    canvas { width: 100%; height: 250px; }
+  </style>
 </head>
 <body>
-  <div class="app" id="app">
-    <header class="topbar">
-      <div class="brand">
-        <span class="zy">ZY</span>
-        <span class="tag">Smart Gold Signals</span>
-      </div>
-      <div class="controls">
-        <button id="notifBtn" class="icon" title="Notifications">🔔</button>
-      </div>
-    </header>
+  <div class="brand">ZY Smart Gold & Oil Signals</div>
+  <div id="timeRow"></div>
 
-    <div id="timeRow" class="time"></div>
-
-    <div id="whaleBanner" class="banner">
-      <div class="bannerText">Status: <strong id="whaleText">Loading...</strong></div>
-      <button id="safeModeBtn" class="safeBtn">Safe Mode</button>
-    </div>
-
-    <main class="grid" id="grid">
-      <div class="card">
-        <h3>Gold Price</h3>
-        <p id="gold">Loading...</p>
-      </div>
-    </main>
-
-    <section class="info" id="info">
-      <div>Last update: <span id="lastUpdate">-</span></div>
-      <div class="powered">Powered by ZY AI System</div>
-    </section>
+  <div class="card">
+    <h3>Gold Price (USD/oz)</h3>
+    <p id="gold">Loading...</p>
+    <canvas id="goldChart"></canvas>
   </div>
 
-  <script>
-  async function updateGoldPrice() {
-    try {
-      // مصدر مفتوح لا يحتاج API key
-      const res = await fetch("https://api.metals.live/v1/spot");
-      const data = await res.json();
+  <div class="card">
+    <h3>Oil Price (USD/barrel)</h3>
+    <p id="oil">Loading...</p>
+    <canvas id="oilChart"></canvas>
+  </div>
 
-      // الذهب عادة في أول عنصر (XAU/USD)
-      const goldData = data.find(item => item.hasOwnProperty("gold"));
-      const price = goldData ? goldData.gold : null;
+  <div class="card">Last update: <span id="lastUpdate">-</span></div>
 
-      const goldElem = document.getElementById('gold');
-      const whaleText = document.getElementById('whaleText');
+<script>
+let goldHistory = [];
+let oilHistory = [];
 
-      if (price) {
-        goldElem.innerText = price + " USD";
-        whaleText.innerText = price > 2400 ? "Market Rising 📈" : "Market Stable ⚖️";
-      } else {
-        goldElem.innerText = "No data";
-        whaleText.innerText = "Offline ⚠️";
-      }
+const goldChartCtx = document.getElementById('goldChart').getContext('2d');
+const oilChartCtx = document.getElementById('oilChart').getContext('2d');
 
-      document.getElementById('lastUpdate').innerText = new Date().toLocaleTimeString();
-      document.getElementById('timeRow').innerText =
-        new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short' }) +
-        " | " +
-        new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) +
-        " GMT";
+const goldChart = new Chart(goldChartCtx, {
+  type: 'line',
+  data: { labels: [], datasets: [{ label: 'Gold', data: [], borderColor: 'gold', tension: 0.3 }] },
+});
 
-    } catch (error) {
-      document.getElementById('gold').innerText = 'Error loading data';
-      document.getElementById('whaleText').innerText = 'API Error ❌';
-      console.error(error);
+const oilChart = new Chart(oilChartCtx, {
+  type: 'line',
+  data: { labels: [], datasets: [{ label: 'Oil', data: [], borderColor: 'orange', tension: 0.3 }] },
+});
+
+async function updatePrices() {
+  try {
+    const res = await fetch('https://api.metals.live/v1/spot');
+    const data = await res.json();
+    const gold = data.find(x => x.gold);
+    const oil = data.find(x => x.oil);
+
+    const now = new Date().toLocaleTimeString();
+
+    if (gold) {
+      document.getElementById('gold').innerText = gold.gold + ' USD';
+      goldHistory.push({ time: now, price: gold.gold });
+      if (goldHistory.length > 10) goldHistory.shift();
+      goldChart.data.labels = goldHistory.map(p => p.time);
+      goldChart.data.datasets[0].data = goldHistory.map(p => p.price);
+      goldChart.update();
     }
-  }
 
-  setInterval(updateGoldPrice, 15000);
-  updateGoldPrice();
-  </script>
+    if (oil) {
+      document.getElementById('oil').innerText = oil.oil + ' USD';
+      oilHistory.push({ time: now, price: oil.oil });
+      if (oilHistory.length > 10) oilHistory.shift();
+      oilChart.data.labels = oilHistory.map(p => p.time);
+      oilChart.data.datasets[0].data = oilHistory.map(p => p.price);
+      oilChart.update();
+    }
+
+    document.getElementById('lastUpdate').innerText = now;
+    document.getElementById('timeRow').innerText = new Date().toUTCString();
+
+  } catch (e) {
+    document.getElementById('gold').innerText = 'Error loading data';
+    document.getElementById('oil').innerText = 'Error loading data';
+  }
+}
+
+updatePrices();
+setInterval(updatePrices, 15000);
+</script>
 </body>
 </html>
