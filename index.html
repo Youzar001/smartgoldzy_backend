@@ -33,5 +33,14 @@
 
   </div>
 <script src="script.js"></script>
+  <script>
+async function updateGoldPrice() {
+  const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,gold,solana&vs_currencies=usd');
+  const data = await res.json();
+  document.getElementById('gold').innerText = "$" + data.gold.usd;
+}
+setInterval(updateGoldPrice, 15000);
+updateGoldPrice();
+</script>
 </body>
 </html>
