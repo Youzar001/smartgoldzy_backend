@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>ZY Smart Signal — Demo</title>
+  <title>ZY Smart Signal — Live</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -16,81 +16,104 @@
       </div>
     </header>
 
-    <div id="timeRow" class="time">Friday 17 Oct | 14:35 GMT</div>
+    <div id="timeRow" class="time"></div>
 
-    <div id="whaleBanner" class="banner active" role="status" aria-live="polite">
-      <div class="bannerText">🚨 Whale Detected — Market unstable. Trading paused ⚠️</div>
+    <div id="whaleBanner" class="banner">
+      <div class="bannerText" id="statusText">Status: Market Normal ✅</div>
       <button id="safeModeBtn" class="safeBtn">Safe Mode</button>
     </div>
 
-    <main class="cards">
-      <div class="card" data-symbol="XAUUSD" tabindex="0">
+    <main class="cards" id="cards">
+      <div class="card" id="goldCard">
         <div class="card-left">
           <div class="symbol">XAU/USD</div>
-          <div class="name" data-en="Gold" data-ar="الذهب">Gold</div>
+          <div class="name">Gold</div>
         </div>
         <div class="card-right">
-          <div class="direction buy">BUY</div>
-          <div class="metrics"><span class="success">92</span><small>%</small> <span class="sep">·</span> <span class="risk">8</span><small>%</small></div>
-          <div class="indicators">RSI · MACD · EMA</div>
+          <div class="price" id="goldPrice">Loading...</div>
         </div>
       </div>
 
-      <div class="card" data-symbol="WTI" tabindex="0">
+      <div class="card" id="oilCard">
         <div class="card-left">
           <div class="symbol">WTI</div>
-          <div class="name" data-en="Oil" data-ar="النفط">Oil</div>
+          <div class="name">Oil</div>
         </div>
         <div class="card-right">
-          <div class="direction sell">SELL</div>
-          <div class="metrics"><span class="success">85</span><small>%</small> <span class="sep">·</span> <span class="risk">15</span><small>%</small></div>
-          <div class="indicators">RSI · ATR · VOLUME</div>
+          <div class="price" id="oilPrice">Loading...</div>
         </div>
       </div>
 
-      <div class="card" data-symbol="BTCUSD" tabindex="0">
+      <div class="card" id="btcCard">
         <div class="card-left">
           <div class="symbol">BTC/USD</div>
-          <div class="name" data-en="Bitcoin" data-ar="البيتكوين">Bitcoin</div>
+          <div class="name">Bitcoin</div>
         </div>
         <div class="card-right">
-          <div class="direction wait">WAIT</div>
-          <div class="metrics"><span class="success">74</span><small>%</small> <span class="sep">·</span> <span class="risk">26</span><small>%</small></div>
-          <div class="indicators">RSI · MACD</div>
+          <div class="price" id="btcPrice">Loading...</div>
         </div>
       </div>
 
-      <div class="card" data-symbol="EURUSD" tabindex="0">
+      <div class="card" id="eurCard">
         <div class="card-left">
           <div class="symbol">EUR/USD</div>
-          <div class="name" data-en="EUR / USD" data-ar="اليورو/دولار">EUR / USD</div>
+          <div class="name">Euro</div>
         </div>
         <div class="card-right">
-          <div class="direction buy">BUY</div>
-          <div class="metrics"><span class="success">88</span><small>%</small> <span class="sep">·</span> <span class="risk">12</span><small>%</small></div>
-          <div class="indicators">RSI · EMA · MACD</div>
+          <div class="price" id="eurPrice">Loading...</div>
         </div>
       </div>
     </main>
 
-    <section class="indpanel" aria-label="Indicators panel">
-      <div class="indrow"><div>RSI</div><div class="indval">55</div></div>
-      <div class="indrow"><div>MACD</div><div class="indval">+0.12</div></div>
-      <div class="indrow"><div>ATR</div><div class="indval">0.45</div></div>
-      <div class="indrow"><div>Volume</div><div class="indval">Normal</div></div>
-      <div class="indrow"><div>Trend Power</div><div class="indval">78%</div></div>
-    </section>
-
     <footer class="footer">
-      <div class="left">
-        <button id="stopBtn" class="stopBtn">🛑 Stop Trading (Emergency)</button>
-      </div>
-      <div class="right">
-        <div class="powered">Powered by ZY AI System</div>
-        <div class="timeSmall">Friday 17 Oct | 14:35 GMT</div>
-      </div>
+      <div class="powered">Powered by ZY AI System</div>
+      <div class="timeSmall" id="updateTime">Last update: --</div>
     </footer>
   </div>
-<script src="script.js"></script>
+
+<script>
+const API_KEY = "cpm5dsaad3ie4nvk5p7g"; // <-- حط هنا المفتاح ديالك
+const symbols = {
+  gold: "XAU/USD",
+  oil: "OANDA:WTICOUSD",
+  btc: "BINANCE:BTCUSDT",
+  eur: "OANDA:EURUSD"
+};
+
+async function fetchPrice(symbol) {
+  const url = `https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${API_KEY}`;
+  const res = await fetch(url);
+  const data = await res.json();
+  return data.c || null;
+}
+
+async function updatePrices() {
+  document.getElementById("timeRow").textContent =
+    new Date().toUTCString().replace("GMT", "UTC");
+
+  try {
+    const [gold, oil, btc, eur] = await Promise.all([
+      fetchPrice("OANDA:XAUUSD"),
+      fetchPrice("OANDA:WTICOUSD"),
+      fetchPrice("BINANCE:BTCUSDT"),
+      fetchPrice("OANDA:EURUSD")
+    ]);
+
+    document.getElementById("goldPrice").textContent = gold ? `${gold} USD` : "—";
+    document.getElementById("oilPrice").textContent = oil ? `${oil} USD` : "—";
+    document.getElementById("btcPrice").textContent = btc ? `${btc} USD` : "—";
+    document.getElementById("eurPrice").textContent = eur ? `${eur}` : "—";
+
+    document.getElementById("updateTime").textContent = 
+      "Last update: " + new Date().toLocaleTimeString();
+  } catch (err) {
+    console.error("Error fetching:", err);
+  }
+}
+
+// تحديث كل 15 ثانية
+updatePrices();
+setInterval(updatePrices, 15000);
+</script>
 </body>
 </html>
