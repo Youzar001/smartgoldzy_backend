@@ -33,12 +33,23 @@
 
   </div>
 <script src="script.js"></script>
-  <script>
+<script>
 async function updateGoldPrice() {
-  const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,gold,solana&vs_currencies=usd');
-  const data = await res.json();
-  document.getElementById('gold').innerText = "$" + data.gold.usd;
+  try {
+    const res = await fetch(`https://finnhub.io/api/v1/quote?symbol=GOLD&token=${'${FINNHUB_API_KEY}'}`);
+    const data = await res.json();
+
+    // عرض السعر الحالي
+    document.getElementById('gold').innerText = data.c ? data.c + ' USD' : 'No data';
+    
+    // عرض وقت آخر تحديث
+    document.getElementById('lastUpdate').innerText = new Date().toLocaleTimeString();
+  } catch (error) {
+    document.getElementById('gold').innerText = 'Error loading data';
+  }
 }
+
+// التحديث كل 15 ثانية
 setInterval(updateGoldPrice, 15000);
 updateGoldPrice();
 </script>
