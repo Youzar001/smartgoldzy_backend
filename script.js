@@ -1,4 +1,23 @@
+// قراءة الرابط من config.json
+fetch('./config.json')
+  .then(response => response.json())
+  .then(config => {
+    const apiBase = config.api_base;
 
+    // جلب البيانات المباشرة من API كل 5 ثواني
+    setInterval(() => {
+      fetch(`${apiBase}/market-data`)
+        .then(res => res.json())
+        .then(data => {
+          updateMarketUI(data);
+        })
+        .catch(err => console.error('API Error:', err));
+    }, 5000);
+  });
+
+function updateMarketUI(data) {
+  console.log("Market Updated:", data);
+}
 // Simple live-updating demo script for Smart Gold ZY (updates every 60s)
 const assets = [
   {symbol:'XAU/USD', name:'Gold', indicators:['RSI','MACD','EMA']},
