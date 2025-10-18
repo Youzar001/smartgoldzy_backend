@@ -1,0 +1,1 @@
+Open index.html in any modern browser (mobile or desktop). This demo updates data every minute (simulated).

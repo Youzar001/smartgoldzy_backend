@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ZY Smart Signal — Live Demo</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app" id="app">
+    <header class="topbar">
+      <div class="brand"><span class="zy">ZY</span><span class="tag">Smart Gold Signals</span></div>
+      <div class="controls">
+        <button id="notifBtn" class="icon" title="Notifications">🔔</button>
+      </div>
+    </header>
+
+    <div id="timeRow" class="time">Friday 17 Oct | 14:35 GMT</div>
+
+    <div id="whaleBanner" class="banner">
+      <div class="bannerText">Status: <strong id="whaleText">Market Normal</strong></div>
+      <button id="safeModeBtn" class="safeBtn">Safe Mode</button>
+    </div>
+
+    <main class="grid" id="grid">
+      <!-- cards inserted by JS -->
+    </main>
+
+    <section class="info" id="info">
+      <div>Last update: <span id="lastUpdate">-</span></div>
+      <div class="powered">Powered by ZY AI System</div>
+    </section>
+
+  </div>
+<script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,37 @@
+:root{
+  --bg: #0B0B0E;
+  --card: #0F0F13;
+  --gold: #D4AF37;
+  --muted: #BFC3C8;
+  --green: #3CCF8E;
+  --red: #FF5C5C;
+  --accent: #2B2C31;
+}
+*{box-sizing:border-box;font-family: Inter, Roboto, Arial, sans-serif;}
+html,body{height:100%;margin:0;background:var(--bg);color:#EEF0F2;}
+.app{max-width:720px;margin:12px auto;padding:14px;border-radius:12px;}
+.topbar{display:flex;justify-content:space-between;align-items:center;padding:6px 4px;}
+.brand{display:flex;align-items:baseline;gap:10px;}
+.zy{color:var(--gold);font-weight:800;font-size:24px;}
+.tag{color:#CFCFCF;font-size:13px;}
+.controls .icon{background:transparent;border:0;color:#FFF;font-size:18px;margin-left:8px;cursor:pointer;}
+.time{color:#9AA0A6;font-size:12px;margin:8px 4px;}
+.banner{display:flex;justify-content:space-between;align-items:center;padding:12px;border-radius:10px;margin:10px 0;background:#111318;color:#FFF;border:1px solid rgba(212,175,55,0.04);}
+.safeBtn{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:8px 10px;border-radius:8px;color:var(--gold);cursor:pointer;}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin-top:12px;}
+.card{background:var(--card);padding:12px;border-radius:12px;border:1px solid rgba(212,175,55,0.04);}
+.card .head{display:flex;justify-content:space-between;align-items:center;}
+.symbol{font-weight:800;color:#fff;}
+.name{color:var(--muted);font-size:13px;}
+.signal{font-weight:800;padding:6px 10px;border-radius:8px;color:#fff;font-size:13px;}
+.signal.buy{background:linear-gradient(90deg,#2BBF93,#3CCF8E);}
+.signal.sell{background:linear-gradient(90deg,#FF6B6B,#FF5C5C);}
+.signal.wait{background:linear-gradient(90deg,#7D7F85,#9A9C9F);}
+.metrics{display:flex;justify-content:space-between;margin-top:12px;color:#E6E7EB;font-weight:700;}
+.metrics small{color:var(--muted);font-weight:400;font-size:12px;}
+.ind{margin-top:10px;color:var(--muted);font-size:13px;}
+.info{display:flex;justify-content:space-between;align-items:center;margin-top:14px;color:#9AA0A6;font-size:13px;}
+.powered{color:var(--gold);font-weight:700;}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:22px;padding:10px 18px;background:#111;border-radius:10px;color:#fff;opacity:0;transition:all .3s ease;z-index:9999;}
+.toast.visible{opacity:1;bottom:32px;}
+@media (max-width:420px){.app{padding:10px;} .zy{font-size:20px;}}
